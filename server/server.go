@@ -8,15 +8,16 @@ import (
 )
 
 type APIServer struct {
-	// сОздаём структуру сервера (просто надстройка над http.Server)
+	// Создаём структуру сервера (просто надстройка над http.Server)
 	httpServer *http.Server
 }
 
-func (as *APIServer) Run(port string) error {
-	// Функция запускающая сервер, инкапсулируем все параметры запуска сервера
-	// Принимает порт на котором будет запущен сервер
+func (as *APIServer) Run(port string, handler http.Handler) error {
+	// Функция запускающая сервер, инкапсулируем все параметры запуска сервера.
+	// Принимает порт на котором будет запущен сервер, а также хендлер.
 	as.httpServer = &http.Server{
 		Addr:           ":" + port,
+		Handler:        handler,
 		MaxHeaderBytes: 1 << 20, // 1MB
 		ReadTimeout:    5 * time.Second,
 		WriteTimeout:   5 * time.Second,
