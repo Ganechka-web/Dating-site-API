@@ -16,7 +16,7 @@ type ConfigDB struct {
 	DBPort         string
 }
 
-// Синглтон для подключение к бд (игнорируем внедрение зависимотей)
+// Синглтон для подключение к бд (игнорируем внедрение зависимостей)
 var ConnectionPool *pgxpool.Pool
 
 func ConnectToDB(ctx context.Context, config *ConfigDB) *pgxpool.Pool {

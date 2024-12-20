@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"dating-site-api/pkg/database"
+	"dating-site-api/internal/database"
 	"dating-site-api/pkg/handlers"
 	"dating-site-api/server"
 
