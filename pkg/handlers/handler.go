@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"dating-site-api/pkg/middlewares"
+	"os"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,10 +22,13 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		auth := api.Group("auth/")
 		{
-			auth.POST("register/", h.RegisterHandler)
 			auth.POST("login/", h.LoaginHandler)
 		}
 		user := api.Group("user")
+
+		// Активием использование промежуточного программного компонента,
+		// для проверки jwt-token - ов, передавая секретный ключ для полписи
+		user.Use(middlewares.JWTMiddleware(os.Getenv("JWT_SECRET_KEY")))
 		{
 			user.GET("list/", h.GetAllUsers)
 		}

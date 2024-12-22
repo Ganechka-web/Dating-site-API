@@ -10,6 +10,7 @@ type User struct {
 	ID          uint64      `json:"id"`
 	Age         pgtype.Int8 `json:"age"`
 	Username    pgtype.Text `json:"username"`
+	Password    pgtype.Text `json:"password"`
 	Email       pgtype.Text `json:"email"`
 	City        pgtype.Text `json:"city"`
 	DateBirth   pgtype.Date `json:"date_birth"`
