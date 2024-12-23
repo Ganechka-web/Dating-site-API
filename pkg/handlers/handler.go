@@ -26,11 +26,12 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		}
 		user := api.Group("user")
 
-		// Активием использование промежуточного программного компонента,
-		// для проверки jwt-token - ов, передавая секретный ключ для полписи
+		// Активием использование промежуточного программного компонента
+		// для проверки jwt-token - ов, передавая секретный ключ для подписи
 		user.Use(middlewares.JWTMiddleware(os.Getenv("JWT_SECRET_KEY")))
 		{
 			user.GET("list/", h.GetAllUsers)
+			user.GET(":id", h.GetUserById)
 		}
 	}
 
