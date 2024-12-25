@@ -35,7 +35,8 @@ func (h Handler) LoaginHandler(c *gin.Context) {
 	err := row.Scan(&user.ID, &user.Username, &user.Password)
 	if err != nil {
 		log.Printf("LogInHandler: unable to scan query: %v", err.Error())
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "There are some issues, try again later"})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Your username or password didn`t match"})
+		return
 	}
 
 	// Сравниваем введённый парорль с паролем из бд

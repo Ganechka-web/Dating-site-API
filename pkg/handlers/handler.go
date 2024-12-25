@@ -33,6 +33,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		{
 			user.GET("list/", h.GetAllUsers)
 			user.GET(":id", h.GetUserById)
+			user.POST(":id/update", h.UpdateUserById)
 		}
 	}
 
