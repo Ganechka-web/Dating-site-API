@@ -16,4 +16,5 @@ type User struct {
 	DateBirth   pgtype.Date `json:"date_birth"`
 	Phone       pgtype.Text `json:"phone"`
 	Description pgtype.Text `json:"description"`
+	Gender      pgtype.Text `json:"gender"`
 }

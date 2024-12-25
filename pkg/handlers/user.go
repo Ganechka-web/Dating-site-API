@@ -50,7 +50,7 @@ func (h Handler) GetUserById(c *gin.Context) {
 		&user.DateBirth, &user.Phone, &user.Description)
 
 	if err != nil {
-		log.Printf("Error during squery scan: %s", err.Error())
+		log.Printf("Error during query scan: %s", err.Error())
 		c.IndentedJSON(http.StatusNotFound, gin.H{"error": "There are no such user"})
 		return
 	}

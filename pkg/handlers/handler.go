@@ -23,9 +23,10 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		auth := api.Group("auth/")
 		{
 			auth.POST("login/", h.LoaginHandler)
+			auth.POST("register/", h.RegisterHandler)
 		}
-		user := api.Group("user")
 
+		user := api.Group("user")
 		// Активием использование промежуточного программного компонента
 		// для проверки jwt-token - ов, передавая секретный ключ для подписи
 		user.Use(middlewares.JWTMiddleware(os.Getenv("JWT_SECRET_KEY")))

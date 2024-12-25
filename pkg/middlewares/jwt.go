@@ -34,6 +34,8 @@ func JWTMiddleware(secret_key string) gin.HandlerFunc {
 		if err != nil || !tokenByte.Valid {
 			c.IndentedJSON(http.StatusForbidden, gin.H{"error": "invalid token"})
 			log.Printf("Invalid token %s", err.Error())
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
 		}
 
 		// Добавляем информацию о токене из claims в сонтекст gin
