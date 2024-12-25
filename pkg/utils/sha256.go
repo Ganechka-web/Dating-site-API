@@ -23,19 +23,29 @@ func ComparePbkdf2Sha256Hashes(storagePasswordHash string, enteredPassword strin
 	}
 	// Извлекаем соль хеша
 	salt := params[2]
+	saltBytes, errDecodeSalt := base64.RawURLEncoding.DecodeString(salt)
+	if errDecodeSalt != nil {
+		log.Printf("ComparePbkdf2Sha256Hashes: error durind decoding salt: %s", errDecodeSalt.Error())
+		return false
+	}
 	// Извлекаем кол-во итераций хеширования
 	iterations, err := strconv.Atoi(params[1])
 	if err != nil {
 		log.Fatalf("ComparePbkdf2Sha265Hashes: invalid hash format: %s", err.Error())
+		return false
 	}
 	// Извлекаем закодированный хеш из бд и декодируем его из кодировки base64
 	storeHash, errDecode := base64.StdEncoding.DecodeString(params[3])
 	if errDecode != nil {
-		log.Fatalf("ComparePbkdf2Sha265Hashes: unable to decode storage password hash %s", errDecode.Error())
+		log.Printf("ComparePbkdf2Sha265Hashes: unable to decode storage password hash %s", errDecode.Error())
+		return false
 	}
 
+	keylen := sha256.New().Size()
+	algorithm := sha256.New
+
 	// На основе извлечённых параметров хеша генерируем хеш для введённого пользователем пароля
-	enteredPasswordHash := pbkdf2.Key([]byte(enteredPassword), []byte(salt), iterations, len(storeHash), sha256.New)
+	enteredPasswordHash := pbkdf2.Key([]byte(enteredPassword), saltBytes, iterations, keylen, algorithm)
 
 	// Срвниваем байтовые срезы хешей паролей
 	return bytes.Equal(enteredPasswordHash, storeHash)
@@ -62,7 +72,7 @@ func GeneratePbkdf2Sha256Hash(password string) string {
 	salt := GenerateRandomSalt()
 	passwordBytes := []byte(password)
 	algorithm := sha256.New
-	keyLen := sha256.Size
+	keyLen := sha256.New().Size()
 
 	passwordHash := pbkdf2.Key(passwordBytes, salt, iterations, keyLen, algorithm)
 
