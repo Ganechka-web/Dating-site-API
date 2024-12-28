@@ -4,6 +4,7 @@ import (
 	"context"
 	"dating-site-api/internal/database"
 	"dating-site-api/internal/models"
+	"dating-site-api/pkg/services"
 	"fmt"
 	"log"
 	"net/http"
@@ -15,28 +16,11 @@ import (
 )
 
 func (h Handler) GetAllUsers(c *gin.Context) {
-	query := `SELECT id, age, username, email, city, 
-			      date_birth, phone, description 
-			  FROM accounts_datinguser;`
-	rows, err := database.ConnectionPool.Query(context.Background(), query)
-
+	users, err := services.GetAllActiveUsers()
 	if err != nil {
-		log.Printf("Error during query processing %s", err.Error())
-		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "There ae some issues, try again later"})
+		log.Printf("GetAllUsers: error during query processing: %s", err.Error())
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "There are some issues, try again later"})
 		return
-	}
-	defer rows.Close()
-
-	users := []models.User{}
-	for rows.Next() {
-		var user models.User
-		err := rows.Scan(
-			&user.ID, &user.Age, &user.Username, &user.Email, &user.City,
-			&user.DateBirth, &user.Phone, &user.Description)
-		if err != nil {
-			log.Printf("Unable to read row %s", err.Error())
-		}
-		users = append(users, user)
 	}
 
 	c.IndentedJSON(http.StatusOK, users)
@@ -52,17 +36,9 @@ func (h Handler) GetUserById(c *gin.Context) {
 		return
 	}
 
-	query := `SELECT id, age, username, email, city, 
-			      date_birth, phone, description 
-			  FROM accounts_datinguser
-			  WHERE id = $1;`
-	row := database.ConnectionPool.QueryRow(context.Background(), query, userId)
-	err := row.Scan(
-		&user.ID, &user.Age, &user.Username, &user.Email, &user.City,
-		&user.DateBirth, &user.Phone, &user.Description)
-
-	if err != nil {
-		log.Printf("Error during query scan: %s", err.Error())
+	user, errQuery := services.GetActiveUserById(userId)
+	if errQuery != nil {
+		log.Printf("Error during query proccesing: %s", errQuery.Error())
 		c.IndentedJSON(http.StatusNotFound, gin.H{"error": "There are no such user"})
 		return
 	}

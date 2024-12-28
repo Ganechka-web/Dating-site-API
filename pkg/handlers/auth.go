@@ -1,13 +1,11 @@
 package handlers
 
 import (
-	"context"
-	"dating-site-api/internal/database"
 	"dating-site-api/internal/models"
+	"dating-site-api/pkg/services"
 	"dating-site-api/pkg/utils"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,7 +17,6 @@ type UserLogIn struct {
 
 func (h Handler) LoaginHandler(c *gin.Context) {
 	var userLogIn UserLogIn
-	var user models.User
 
 	if err := c.ShouldBindJSON(&userLogIn); err != nil {
 		log.Fatal("LoginHandler: unable to bind data")
@@ -27,15 +24,10 @@ func (h Handler) LoaginHandler(c *gin.Context) {
 	}
 
 	// Достаем пользователя по имени из бд
-	query := `SELECT id, username, password 
-			  FROM accounts_datinguser 
-			  WHERE username = $1;`
-	row := database.ConnectionPool.QueryRow(context.Background(), query, userLogIn.Username)
-
-	err := row.Scan(&user.ID, &user.Username, &user.Password)
-	if err != nil {
-		log.Printf("LogInHandler: unable to scan query: %v", err.Error())
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Your username or password didn`t match"})
+	user, errQuery := services.GetUserByUsername(userLogIn.Username)
+	if errQuery != nil {
+		log.Printf("LoaginHandler: error during query proccesing: %s", errQuery.Error())
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "there is no such user"})
 		return
 	}
 
@@ -69,14 +61,10 @@ func (h Handler) RegisterHandler(c *gin.Context) {
 		return
 	}
 
-	// (is_superuser, first_name, last_name, date_joined, is_staff, is_active) для совместимости с django ORM и бд
-	query := `INSERT INTO accounts_datinguser (age, username, email, password,
-			      city, date_birth, phone, description, gender, first_name, last_name, 
-				  date_joined, is_superuser, is_staff, is_active)
-			  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`
-	_, errQuery := database.ConnectionPool.Exec(context.Background(), query,
-		newUser.Age, newUser.Username, newUser.Email, utils.GeneratePbkdf2Sha256Hash(newUser.Password.String),
-		newUser.City, newUser.DateBirth, newUser.Phone, newUser.Description, newUser.Gender, string(""), string(""), time.Now(), false, false, true)
+	newUser.Password.String = utils.GeneratePbkdf2Sha256Hash(newUser.Password.String)
+
+	// Зарос на создаие нового пользователя
+	errQuery := services.CreateUser(newUser)
 	if errQuery != nil {
 		log.Printf("error during query processing: %s", errQuery.Error())
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "There are some issues, try again later"})

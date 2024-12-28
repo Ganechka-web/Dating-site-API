@@ -17,7 +17,7 @@ func main() {
 	// Подгружаем переменные окружения
 	err_dotenv := godotenv.Load(".env")
 	if err_dotenv != nil {
-		fmt.Fprintf(os.Stderr, "Eroor loading .env file: %v", err_dotenv)
+		fmt.Fprintf(os.Stderr, "Error loading .env file: %v", err_dotenv)
 		os.Exit(1)
 	}
 

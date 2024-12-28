@@ -18,7 +18,7 @@ func ComparePbkdf2Sha256Hashes(storagePasswordHash string, enteredPassword strin
 	// Разбиваем полный хеш из бд на составные части
 	params := strings.Split(storagePasswordHash, "$")
 	if len(params) != 4 {
-		log.Fatal("ComparePbkdf2Sha265Hashes: invalid hash format")
+		log.Printf("ComparePbkdf2Sha265Hashes: invalid hash format: %s", storagePasswordHash)
 		return false
 	}
 	// Извлекаем соль хеша
@@ -31,7 +31,7 @@ func ComparePbkdf2Sha256Hashes(storagePasswordHash string, enteredPassword strin
 	// Извлекаем кол-во итераций хеширования
 	iterations, err := strconv.Atoi(params[1])
 	if err != nil {
-		log.Fatalf("ComparePbkdf2Sha265Hashes: invalid hash format: %s", err.Error())
+		log.Printf("ComparePbkdf2Sha265Hashes: invalid hash format: %s", err.Error())
 		return false
 	}
 	// Извлекаем закодированный хеш из бд и декодируем его из кодировки base64
