@@ -4,7 +4,10 @@ import (
 	"context"
 	"dating-site-api/internal/database"
 	"dating-site-api/internal/models"
+	"errors"
+	"fmt"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -89,5 +92,50 @@ func CreateUser(newUser models.User) error {
 	if errQuery != nil {
 		return errQuery
 	}
+	return nil
+}
+
+func UpdateUserById(userId int, data map[string]interface{}) error {
+	params := make([]string, 0)
+
+	// Валидируем и синхрогизируем типы для sql
+	for key, value := range data {
+		switch key {
+		case "age":
+			if age, ok := value.(float64); !ok {
+				errText := fmt.Sprintln("can`t convert age: ", value)
+				return errors.New(errText)
+
+			} else {
+				params = append(params, fmt.Sprintf("%s = %d", key, int8(age)))
+			}
+		case "date_birth":
+			if dateBirth, ok := value.(string); !ok {
+				errText := fmt.Sprintln("can`t convert date_birth: ", value)
+				return errors.New(errText)
+
+			} else {
+				dateBirthParsed, errParse := time.Parse("02-01-2006", dateBirth)
+				if errParse != nil {
+					return errParse
+				}
+				params = append(params, fmt.Sprintf("%s = '%s'", key, dateBirthParsed.Format("02-01-2006")))
+			}
+		case "gender", "phone", "description", "city", "Email":
+			params = append(params, fmt.Sprintf("%s = '%s'", key, value))
+		default:
+			errText := fmt.Sprintf("can`t convert field %s: %v", key, value)
+			return errors.New(errText)
+		}
+	}
+	query := fmt.Sprintf(`UPDATE accounts_datinguser
+						  SET %s
+						  WHERE id = $1;`, strings.Join(params, ", "))
+	log.Printf("%s", query)
+	_, errQuery := database.ConnectionPool.Exec(context.Background(), query, userId)
+	if errQuery != nil {
+		return errQuery
+	}
+
 	return nil
 }
